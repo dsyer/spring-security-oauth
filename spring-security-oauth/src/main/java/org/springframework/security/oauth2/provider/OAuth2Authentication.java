@@ -39,26 +39,46 @@ public class OAuth2Authentication<C extends Authentication, U extends Authentica
 	}
 
 	/**
-	 * @param clientAuthentication
-	 * @param userAuthentication 
-	 * @return
+	 * Extract some authorities from a combination of the contents of the input. The client always takes precedence
+	 * because this is where the knowledge of scoped access is encapsulated. The algorithm is as follows:
+	 * 
+	 * <ol>
+	 * <li>If the client is a {@link ClientAuthenticationToken} and it contains scope information then that is converted
+	 * to authorities using a prefix "SCOPE_" and appending the name (uppercased) of the claimed scope. For instance a
+	 * client authorized to access scopes <code>[read,write]</code> will have authorities
+	 * <code>[SCOPE_READ,SCOPE_WRITE]</code>.</li>
+	 * <li>A client can have no claimed scopes but still have some granted authorities, which will have been supplied as
+	 * defaults by the authorization service. If those are present they are used.</li>
+	 * <li>If the client has no intrinsic source of authorities the user authorities are used instead (or null if there
+	 * are none or the user token itself is null).</li>
+	 * </ol>
+	 * 
+	 * Note that the third option above is a fallback, and only makes sense in restricted circumstances, when the
+	 * resource service understands the same authorities as the authorization service (as would be the case if they were
+	 * the same application).
+	 * 
+	 * @param clientAuthentication the client authentication token
+	 * @param userAuthentication the user authentication token
+	 * @return a collection of authorities
 	 */
-	private static Collection<? extends GrantedAuthority> extractAuthorities(Authentication clientAuthentication, Authentication userAuthentication) {
+	private static Collection<? extends GrantedAuthority> extractAuthorities(Authentication clientAuthentication,
+			Authentication userAuthentication) {
 		if (clientAuthentication instanceof ClientAuthenticationToken) {
 			ClientAuthenticationToken clientAuthenticationToken = (ClientAuthenticationToken) clientAuthentication;
 			Set<String> scopes = clientAuthenticationToken.getScope();
-			Collection<? extends GrantedAuthority> authorities = clientAuthentication.getAuthorities();
-			if (scopes!=null && !scopes.isEmpty()) {
+			if (scopes != null && !scopes.isEmpty()) {
 				Collection<GrantedAuthority> result = new HashSet<GrantedAuthority>();
 				for (String scope : scopes) {
-					result.add(new SimpleGrantedAuthority(SCOPE_PREFIX+scope.toUpperCase()));
-				}	
+					result.add(new SimpleGrantedAuthority(SCOPE_PREFIX + scope.toUpperCase()));
+				}
 				return result;
-			} else if (authorities!=null && !authorities.isEmpty()) {
-				return authorities;
 			}
 		}
-		return userAuthentication.getAuthorities();
+		Collection<? extends GrantedAuthority> authorities = clientAuthentication.getAuthorities();
+		if (authorities != null && !authorities.isEmpty()) {
+			return authorities;
+		}
+		return userAuthentication == null ? null : userAuthentication.getAuthorities();
 	}
 
 	public Object getCredentials() {
