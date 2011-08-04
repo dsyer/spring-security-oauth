@@ -31,7 +31,7 @@ public class ScopeVoter implements AccessDecisionVoter<Object> {
 
     private String scopePrefix = "SCOPE_";
 
-    public String getRolePrefix() {
+    public String getScopePrefix() {
         return scopePrefix;
     }
 
@@ -46,7 +46,7 @@ public class ScopeVoter implements AccessDecisionVoter<Object> {
     }
 
 	public boolean supports(ConfigAttribute attribute) {
-        if ((attribute.getAttribute() != null) && attribute.getAttribute().startsWith(getRolePrefix())) {
+        if ((attribute.getAttribute() != null) && attribute.getAttribute().startsWith(getScopePrefix())) {
             return true;
         }
         else {
