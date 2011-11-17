@@ -30,6 +30,8 @@ import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
  */
 public class TestImplicitProvider {
 
+	private static final String SPARKLR_OAUTH_AUTHORIZE = TestNativeApplicationProvider.SPARKLR_OAUTH_AUTHORIZE;
+
 	@Rule
 	public ServerRunning serverRunning = ServerRunning.isRunning();
 
@@ -42,7 +44,7 @@ public class TestImplicitProvider {
 		WebClient userAgent = new WebClient(BrowserVersion.FIREFOX_3);
 		userAgent.setRedirectEnabled(false);
 
-		URI uri = serverRunning.buildUri("/sparklr/oauth/authorize").queryParam("response_type", "token")
+		URI uri = serverRunning.buildUri(SPARKLR_OAUTH_AUTHORIZE).queryParam("response_type", "token")
 				.queryParam("state", "mystateid").queryParam("client_id", "my-less-trusted-client")
 				.queryParam("redirect_uri", "http://anywhere").queryParam("scope", "read").build();
 		String location = null;
@@ -132,7 +134,7 @@ public class TestImplicitProvider {
 		assertNotNull("Expected cookie in " + result.getHeaders(), cookie);
 		headers.set("Cookie", cookie);
 
-		location = "/sparklr/oauth/authorize";
+		location = SPARKLR_OAUTH_AUTHORIZE;
 		formData = new LinkedMultiValueMap<String, String>();
 		formData.add("response_type", "token");
 		formData.add("state", "mystateid");

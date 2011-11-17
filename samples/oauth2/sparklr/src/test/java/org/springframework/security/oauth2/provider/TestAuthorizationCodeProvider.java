@@ -40,6 +40,8 @@ import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
  */
 public class TestAuthorizationCodeProvider {
 
+	private static final String SPARKLR_OAUTH_AUTHORIZE = TestNativeApplicationProvider.SPARKLR_OAUTH_AUTHORIZE;
+	
 	@Rule
 	public ServerRunning serverRunning = ServerRunning.isRunning();
 
@@ -52,7 +54,7 @@ public class TestAuthorizationCodeProvider {
 		WebClient userAgent = new WebClient(BrowserVersion.FIREFOX_3);
 		userAgent.setRedirectEnabled(false);
 
-		URI uri = serverRunning.buildUri("/sparklr/oauth/authorize").queryParam("response_type", "code")
+		URI uri = serverRunning.buildUri(SPARKLR_OAUTH_AUTHORIZE).queryParam("response_type", "code")
 				.queryParam("state", "mystateid").queryParam("client_id", "my-less-trusted-client")
 				.queryParam("redirect_uri", "http://anywhere").queryParam("scope", "read").build();
 		String location = null;
@@ -159,7 +161,7 @@ public class TestAuthorizationCodeProvider {
 
 		WebClient userAgent = new WebClient(BrowserVersion.FIREFOX_3);
 		userAgent.setRedirectEnabled(false);
-		URI uri = serverRunning.buildUri("/sparklr/oauth/authorize").queryParam("response_type", "code")
+		URI uri = serverRunning.buildUri(SPARKLR_OAUTH_AUTHORIZE).queryParam("response_type", "code")
 				.queryParam("state", "mystateid").queryParam("client_id", "my-less-trusted-client")
 				.queryParam("redirect_uri", "http://anywhere").build();
 		String location = null;
@@ -238,7 +240,7 @@ public class TestAuthorizationCodeProvider {
 
 		WebClient userAgent = new WebClient(BrowserVersion.FIREFOX_3);
 		userAgent.setRedirectEnabled(false);
-		URI uri = serverRunning.buildUri("/sparklr/oauth/authorize").queryParam("response_type", "code")
+		URI uri = serverRunning.buildUri(SPARKLR_OAUTH_AUTHORIZE).queryParam("response_type", "code")
 				.queryParam("state", "mystateid").queryParam("client_id", "my-less-trusted-client")
 				.queryParam("redirect_uri", "http://anywhere").build();
 		String location = null;
@@ -286,7 +288,7 @@ public class TestAuthorizationCodeProvider {
 
 		WebClient userAgent = new WebClient(BrowserVersion.FIREFOX_3);
 		userAgent.setRedirectEnabled(false);
-		URI uri = serverRunning.buildUri("/sparklr/oauth/authorize").queryParam("response_type", "code")
+		URI uri = serverRunning.buildUri(SPARKLR_OAUTH_AUTHORIZE).queryParam("response_type", "code")
 				.queryParam("state", "mystateid")
 				// .queryParam("client_id", "my-less-trusted-client")
 				.queryParam("redirect_uri", "http://anywhere").build();
@@ -309,7 +311,7 @@ public class TestAuthorizationCodeProvider {
 
 		WebClient userAgent = new WebClient(BrowserVersion.FIREFOX_3);
 		userAgent.setRedirectEnabled(false);
-		URI uri = serverRunning.buildUri("/sparklr/oauth/authorize").queryParam("response_type", "code")
+		URI uri = serverRunning.buildUri(SPARKLR_OAUTH_AUTHORIZE).queryParam("response_type", "code")
 				.queryParam("state", "mystateid")
 				// .queryParam("client_id", "my-less-trusted-client")
 				.queryParam("redirect_uri", "http://anywhere").build();
@@ -339,7 +341,7 @@ public class TestAuthorizationCodeProvider {
 
 		WebClient userAgent = new WebClient(BrowserVersion.FIREFOX_3);
 		userAgent.setRedirectEnabled(false);
-		URI uri = serverRunning.buildUri("/sparklr/oauth/authorize").queryParam("response_type", "code")
+		URI uri = serverRunning.buildUri(SPARKLR_OAUTH_AUTHORIZE).queryParam("response_type", "code")
 				.queryParam("state", "mystateid").build();
 		// .queryParam("client_id", "my-less-trusted-client")
 		// .queryParam("redirect_uri", "http://anywhere");
@@ -359,7 +361,7 @@ public class TestAuthorizationCodeProvider {
 		WebClient userAgent = new WebClient(BrowserVersion.FIREFOX_3);
 		userAgent.setRedirectEnabled(false);
 
-		URI uri = serverRunning.buildUri("/sparklr/oauth/authorize").queryParam("response_type", "code")
+		URI uri = serverRunning.buildUri(SPARKLR_OAUTH_AUTHORIZE).queryParam("response_type", "code")
 				.queryParam("state", "mystateid").queryParam("client_id", "my-client-with-registered-redirect")
 				.queryParam("scope", "read").build();
 		String location = null;
@@ -453,7 +455,7 @@ public class TestAuthorizationCodeProvider {
 		WebClient userAgent = new WebClient(BrowserVersion.FIREFOX_3);
 		userAgent.setRedirectEnabled(false);
 
-		URI uri = serverRunning.buildUri("/sparklr/oauth/authorize").queryParam("response_type", "code")
+		URI uri = serverRunning.buildUri(SPARKLR_OAUTH_AUTHORIZE).queryParam("response_type", "code")
 				.queryParam("state", "mystateid").queryParam("client_id", "my-client-with-registered-redirect")
 				.queryParam("scope", "read").build();
 		String location = null;
@@ -534,7 +536,7 @@ public class TestAuthorizationCodeProvider {
 		WebClient userAgent = new WebClient(BrowserVersion.FIREFOX_3);
 		userAgent.setRedirectEnabled(false);
 
-		URI uri = serverRunning.buildUri("/sparklr/oauth/authorize").queryParam("response_type", "code")
+		URI uri = serverRunning.buildUri(SPARKLR_OAUTH_AUTHORIZE).queryParam("response_type", "code")
 				.queryParam("state", "mystateid")
 				.queryParam("client_id", "my-untrusted-client-with-registered-redirect").queryParam("scope", "read")
 				.build();

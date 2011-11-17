@@ -23,6 +23,8 @@ import org.springframework.util.MultiValueMap;
  */
 public class TestRefreshTokenSupport {
 
+	private static final String SPARKLR_OAUTH_TOKEN = TestNativeApplicationProvider.SPARKLR_OAUTH_TOKEN;
+
 	@Rule
 	public ServerRunning serverRunning = ServerRunning.isRunning();
 
@@ -38,7 +40,7 @@ public class TestRefreshTokenSupport {
 		formData.add("scope", "read");
 		formData.add("username", "marissa");
 		formData.add("password", "koala");
-		ResponseEntity<String> response = serverRunning.postForString("/sparklr/oauth/token", formData);
+		ResponseEntity<String> response = serverRunning.postForString(SPARKLR_OAUTH_TOKEN, formData);
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 		assertEquals("no-store", response.getHeaders().getFirst("Cache-Control"));
 
@@ -62,7 +64,7 @@ public class TestRefreshTokenSupport {
 		formData.add("grant_type", "refresh_token");
 		formData.add("client_id", "my-trusted-client");
 		formData.add("refresh_token", accessToken.getRefreshToken().getValue());
-		response = serverRunning.postForString("/sparklr/oauth/token", formData);
+		response = serverRunning.postForString(SPARKLR_OAUTH_TOKEN, formData);
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 		assertEquals("no-store", response.getHeaders().getFirst("Cache-Control"));
 		OAuth2AccessToken newAccessToken = serializationService.deserializeJsonAccessToken(new ByteArrayInputStream(

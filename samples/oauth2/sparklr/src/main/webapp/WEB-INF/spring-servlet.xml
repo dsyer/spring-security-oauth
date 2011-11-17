@@ -12,9 +12,9 @@
 		<intercept-url pattern="/photos/**" access="ROLE_USER,SCOPE_READ" />
 		<intercept-url pattern="/trusted/**" access="ROLE_CLIENT,SCOPE_TRUST" />
 		<intercept-url pattern="/user/**" access="ROLE_USER,SCOPE_TRUST" />
-		<intercept-url pattern="/oauth/token" access="IS_AUTHENTICATED_ANONYMOUSLY" />
-		<intercept-url pattern="/oauth/authorize" access="IS_AUTHENTICATED_ANONYMOUSLY" />
-		<intercept-url pattern="/oauth/**" access="ROLE_USER" />
+		<intercept-url pattern="/token" access="IS_AUTHENTICATED_ANONYMOUSLY" />
+		<intercept-url pattern="/authorize" access="IS_AUTHENTICATED_ANONYMOUSLY" />
+		<intercept-url pattern="/oauth/confirm_access" access="ROLE_USER" />
 		<intercept-url pattern="/**" access="IS_AUTHENTICATED_ANONYMOUSLY,DENY_OAUTH" />
 
 		<form-login authentication-failure-url="/login.jsp" default-target-url="/index.jsp" login-page="/login.jsp"
@@ -50,7 +50,8 @@
 		<property name="supportRefreshToken" value="true" />
 	</bean>
 
-	<oauth:authorization-server client-details-service-ref="clientDetails" token-services-ref="tokenServices">
+	<oauth:authorization-server client-details-service-ref="clientDetails" token-services-ref="tokenServices"
+		authorization-endpoint-url="/authorize" token-endpoint-url="/token">
 		<oauth:authorization-code />
 		<oauth:implicit />
 		<oauth:refresh-token />
