@@ -5,7 +5,9 @@ layout: default
 
 {% include sequence.md %}
 
-Some Example CSRF attempts follow.  All of them rely on the fact that the authorization server will send redirects to any URI you ask it to.  With registered redirects they are not going to work.
+# Cross Site Request Forgery and OAuth2
+
+Some Example CSRF attempts follow.  All of them rely on the fact that the Authorization Server will send redirects to any URI you ask it to, unless a specific redirect has been pre-regsistered for the client in question.  With registered redirects they are not going to work.
 
 ## Implicit Grant Attacks
 
