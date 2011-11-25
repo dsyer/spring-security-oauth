@@ -1,0 +1,55 @@
+User->BadClient: GET /peek
+participant AuthServer
+
+activate User
+activate BadClient
+
+BadClient->User: 302: location=auth/authorize?client_id=good&redirect_uri=/bad/peek
+note right of BadClient: 
+ the BadClient
+ impersonates
+ a GoodClient
+ by sending a false
+ client_id
+end note
+deactivate User
+deactivate BadClient
+
+User->AuthServer: GET /authorize
+activate User
+activate AuthServer
+AuthServer->User: {messages: "Do you approve?"}
+deactivate User
+deactivate AuthServer
+
+User->AuthServer: approve
+activate User
+activate AuthServer
+AuthServer->User: 302: location=/bad/peek?code=dkshfjg
+deactivate User
+deactivate AuthServer
+
+User->BadClient: GET /peek?code=dkshfjg
+activate User
+activate BadClient
+
+BadClient->AuthServer: POST: /token?code=dkshfjg
+note right of BadClient
+ If AuthServer does not
+ require client credentials
+ with this request, the 
+ BadClient successfully
+ obtains a token
+end note
+activate AuthServer
+AuthServer->BadClient: 200: {access_token:CNMBVCXKVY} 
+deactivate AuthServer
+
+BadClient->ResourceServer: GET /resource(access_token)
+activate ResourceServer
+ResourceServer->BadClient: 200: response
+deactivate ResourceServer
+
+BadClient->User: 200: result
+deactivate BadClient
+deactivate User
