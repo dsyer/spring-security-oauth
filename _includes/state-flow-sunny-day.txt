@@ -1,0 +1,44 @@
+User->Client: GET /peek
+participant AuthServer
+
+activate User
+activate Client
+
+note right of Client: generate random key for state
+Client->Session: store: {request:/peek, poioiu:XASFDAS}
+activate Session
+Client->User: 302: location=auth/authorize?state=poioiu
+deactivate User
+deactivate Client
+
+User->AuthServer: GET /authorize?state=poioiu
+activate User
+activate AuthServer
+AuthServer->User: 302: location=client/handle_code?code=dkshfjg&state=poioiu
+deactivate User
+deactivate AuthServer
+
+User->Client: GET /handle_code?code=dkshfjg&state=poioiu
+activate User
+activate Client
+
+note left of Client: check state
+Client->Session: get poioiu
+Session->Client: XASFDAS
+note left of Client: OK (state exists)
+Client->AuthServer: POST: /token?code=dkshfjg
+activate AuthServer
+AuthServer->Client: 200: {access_token:CNMBVCXKVY} 
+deactivate AuthServer
+
+Client->Session: get request
+Session->Client: /peek
+note left of Client: continue with /peek
+Client->ResourceServer: GET /resource(access_token)
+activate ResourceServer
+ResourceServer->Client: 200: response
+deactivate ResourceServer
+
+Client->User: 200: result
+deactivate Client
+deactivate User

@@ -1,0 +1,41 @@
+User->Client: GET /peek
+participant AuthServer
+
+activate User
+activate Client
+
+Client->User: 302: location=auth/authorize
+deactivate User
+deactivate Client
+
+User->AuthServer: GET /authorize
+activate User
+activate AuthServer
+AuthServer->User: {messages: "Do you approve?"}
+deactivate User
+deactivate AuthServer
+
+User->AuthServer: approve
+activate User
+activate AuthServer
+AuthServer->User: 302: location=client/handle_code?code=dkshfjg
+deactivate User
+deactivate AuthServer
+
+User->Client: GET /handle_code?code=dkshfjg
+activate User
+activate Client
+
+Client->AuthServer: POST: /token?code=dkshfjg
+activate AuthServer
+AuthServer->Client: 200: {access_token:CNMBVCXKVY} 
+deactivate AuthServer
+
+Client->ResourceServer: GET /resource(access_token)
+activate ResourceServer
+ResourceServer->Client: 200: response
+deactivate ResourceServer
+
+Client->User: 200: result
+deactivate Client
+deactivate User
