@@ -14,13 +14,6 @@ deactivate Client
 User->AuthServer: GET /authorize?state=poioiu
 activate User
 activate AuthServer
-AuthServer->User: {messages: "Do you approve?"}
-deactivate User
-deactivate AuthServer
-
-User->AuthServer: approve
-activate User
-activate AuthServer
 AuthServer->User: 302: location=client/handle_code?code=dkshfjg&state=poioiu
 deactivate User
 deactivate AuthServer
