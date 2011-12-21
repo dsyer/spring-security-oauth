@@ -36,7 +36,6 @@ import org.springframework.web.client.HttpMessageConverterExtractor;
 import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -74,7 +73,7 @@ public abstract class OAuth2AccessTokenSupport implements InitializingBean {
 		Assert.notNull(serializationService, "OAuth2 serialization service is required.");
 	}
 
-	protected RestOperations getRestTemplate() {
+	protected RestTemplate getRestTemplate() {
 		return restTemplate;
 	}
 
