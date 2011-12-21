@@ -2,7 +2,9 @@ package org.springframework.security.oauth2.client.token;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -24,11 +26,10 @@ import org.springframework.security.oauth2.client.resource.OAuth2AccessDeniedExc
 import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
 import org.springframework.security.oauth2.client.token.auth.ClientAuthenticationHandler;
 import org.springframework.security.oauth2.client.token.auth.DefaultClientAuthenticationHandler;
-import org.springframework.security.oauth2.common.DefaultOAuth2SerializationService;
+import org.springframework.security.oauth2.client.util.DefaultOAuth2SerializationService;
+import org.springframework.security.oauth2.client.util.OAuth2SerializationService;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
-import org.springframework.security.oauth2.common.OAuth2SerializationService;
 import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
-import org.springframework.security.oauth2.common.exceptions.SerializationException;
 import org.springframework.util.Assert;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.DefaultResponseErrorHandler;
@@ -52,6 +53,12 @@ public abstract class OAuth2AccessTokenSupport implements InitializingBean {
 
 	private final RestTemplate restTemplate;
 
+	private List<HttpMessageConverter<?>> messageConverters = new ArrayList<HttpMessageConverter<?>>();
+
+	private final OAuth2AccessTokenMessageConverter formAccessTokenMessageConverter = new OAuth2AccessTokenMessageConverter();
+
+	private final OAuth2ErrorMessageConverter formErrorMessageConverter = new OAuth2ErrorMessageConverter();
+
 	private OAuth2SerializationService serializationService = new DefaultOAuth2SerializationService();
 
 	private ClientAuthenticationHandler authenticationHandler = new DefaultClientAuthenticationHandler();
@@ -66,6 +73,7 @@ public abstract class OAuth2AccessTokenSupport implements InitializingBean {
 				connection.setInstanceFollowRedirects(false);
 			}
 		});
+		setMessageConverters(this.restTemplate.getMessageConverters());
 	}
 
 	public void afterPropertiesSet() throws Exception {
@@ -87,6 +95,12 @@ public abstract class OAuth2AccessTokenSupport implements InitializingBean {
 
 	public void setAuthenticationHandler(ClientAuthenticationHandler authenticationHandler) {
 		this.authenticationHandler = authenticationHandler;
+	}
+
+	public void setMessageConverters(List<HttpMessageConverter<?>> messageConverters) {
+		this.messageConverters = new ArrayList<HttpMessageConverter<?>>(messageConverters);
+		this.messageConverters.add(this.formAccessTokenMessageConverter);
+		this.messageConverters.add(this.formErrorMessageConverter);
 	}
 
 	protected OAuth2AccessToken retrieveToken(MultiValueMap<String, String> form,
@@ -142,8 +156,7 @@ public abstract class OAuth2AccessTokenSupport implements InitializingBean {
 	}
 
 	protected ResponseExtractor<OAuth2AccessToken> getResponseExtractor() {
-		return new HttpMessageConverterExtractor<OAuth2AccessToken>(OAuth2AccessToken.class,
-				Arrays.<HttpMessageConverter<?>> asList(new OAuth2AccessTokenMessageConverter()));
+		return new HttpMessageConverterExtractor<OAuth2AccessToken>(OAuth2AccessToken.class, this.messageConverters);
 	}
 
 	protected RequestCallback getRequestCallback(OAuth2ProtectedResourceDetails resource,
@@ -175,27 +188,14 @@ public abstract class OAuth2AccessTokenSupport implements InitializingBean {
 
 	private class AccessTokenErrorHandler extends DefaultResponseErrorHandler {
 
+		@SuppressWarnings("unchecked")
 		@Override
 		public void handleError(ClientHttpResponse response) throws IOException {
-			MediaType contentType = response.getHeaders().getContentType();
-			if (contentType != null
-					&& (response.getStatusCode().value() == 400 || response.getStatusCode().value() == 401)) {
-				if (MediaType.APPLICATION_JSON.includes(contentType)) {
-					try {
-						throw getSerializationService().deserializeJsonError(response.getBody());
-					}
-					catch (SerializationException e) {
-						throw new OAuth2Exception(
-								"Error getting the access token, and unable to read the details of the error in the JSON response.",
-								e);
-					}
-				}
-				else if (MediaType.APPLICATION_FORM_URLENCODED.includes(contentType)) {
-					MultiValueMap<String, String> map = FORM_MESSAGE_CONVERTER.read(null, response);
-					throw getSerializationService().deserializeError(map.toSingleValueMap());
+			for (HttpMessageConverter<?> converter : messageConverters) {
+				if (converter.canRead(OAuth2Exception.class, response.getHeaders().getContentType())) {
+					throw ((HttpMessageConverter<OAuth2Exception>)converter).read(OAuth2Exception.class, response);
 				}
 			}
-
 			super.handleError(response);
 		}
 
@@ -204,7 +204,7 @@ public abstract class OAuth2AccessTokenSupport implements InitializingBean {
 	private class OAuth2AccessTokenMessageConverter extends AbstractHttpMessageConverter<OAuth2AccessToken> {
 
 		private OAuth2AccessTokenMessageConverter() {
-			super(new MediaType("*", "*"));
+			super(MediaType.APPLICATION_FORM_URLENCODED);
 		}
 
 		@Override
@@ -215,22 +215,9 @@ public abstract class OAuth2AccessTokenSupport implements InitializingBean {
 		@Override
 		protected OAuth2AccessToken readInternal(Class<? extends OAuth2AccessToken> clazz, HttpInputMessage response)
 				throws IOException, HttpMessageNotReadableException {
-			MediaType contentType = response.getHeaders().getContentType();
-			if (contentType != null && MediaType.APPLICATION_JSON.includes(contentType)) {
-				try {
-					return getSerializationService().deserializeJsonAccessToken(response.getBody());
-				}
-				catch (SerializationException e) {
-					throw new OAuth2Exception(
-							"Error getting the access token, and unable to read the details of the error in the JSON response.",
-							e);
-				}
-			}
-			else {
-				// the spec currently says json is required, but facebook, for example, still returns form-encoded.
-				MultiValueMap<String, String> map = FORM_MESSAGE_CONVERTER.read(null, response);
-				return getSerializationService().deserializeAccessToken(map.toSingleValueMap());
-			}
+			// the spec currently says json is required, but facebook, for example, still returns form-encoded.
+			MultiValueMap<String, String> map = FORM_MESSAGE_CONVERTER.read(null, response);
+			return getSerializationService().deserializeAccessToken(map.toSingleValueMap());
 		}
 
 		@Override
@@ -239,4 +226,31 @@ public abstract class OAuth2AccessTokenSupport implements InitializingBean {
 			throw new HttpMessageNotWritableException("Access token support shouldn't need to write access tokens.");
 		}
 	}
+
+	private class OAuth2ErrorMessageConverter extends AbstractHttpMessageConverter<OAuth2Exception> {
+
+		private OAuth2ErrorMessageConverter() {
+			super(MediaType.APPLICATION_FORM_URLENCODED);
+		}
+
+		@Override
+		protected boolean supports(Class<?> clazz) {
+			return OAuth2Exception.class.isAssignableFrom(clazz);
+		}
+
+		@Override
+		protected OAuth2Exception readInternal(Class<? extends OAuth2Exception> clazz, HttpInputMessage response)
+				throws IOException, HttpMessageNotReadableException {
+			// the spec currently says json is required, but facebook, for example, still returns form-encoded.
+			MultiValueMap<String, String> map = FORM_MESSAGE_CONVERTER.read(null, response);
+			return getSerializationService().deserializeError(map.toSingleValueMap());
+		}
+
+		@Override
+		protected void writeInternal(OAuth2Exception oAuth2AccessToken, HttpOutputMessage outputMessage)
+				throws IOException, HttpMessageNotWritableException {
+			throw new HttpMessageNotWritableException("Access token support shouldn't need to write errors.");
+		}
+	}
+
 }

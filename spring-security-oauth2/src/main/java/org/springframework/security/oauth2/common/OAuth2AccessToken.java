@@ -28,13 +28,11 @@ public class OAuth2AccessToken implements Serializable {
 
 	@JsonProperty("access_token")
 	private final String value;
-	@JsonIgnore
 	private Date expiration;
 	@JsonProperty("token_type")
 	private String tokenType = BEARER_TYPE.toLowerCase();
 	@JsonProperty("refresh_token")
 	private OAuth2RefreshToken refreshToken;
-	@JsonIgnore
 	private Set<String> scope;
 	
 	/**
@@ -142,6 +140,7 @@ public class OAuth2AccessToken implements Serializable {
 	 * 
 	 * @return The scope of the token.
 	 */
+	@JsonIgnore
 	public Set<String> getScope() {
 		return scope;
 	}

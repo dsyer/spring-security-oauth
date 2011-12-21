@@ -1,16 +1,13 @@
-package org.springframework.security.oauth2.common;
+package org.springframework.security.oauth2.client.util;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.common.OAuth2RefreshToken;
 import org.springframework.security.oauth2.common.exceptions.InvalidClientException;
 import org.springframework.security.oauth2.common.exceptions.InvalidGrantException;
 import org.springframework.security.oauth2.common.exceptions.InvalidRequestException;
@@ -18,73 +15,19 @@ import org.springframework.security.oauth2.common.exceptions.InvalidScopeExcepti
 import org.springframework.security.oauth2.common.exceptions.InvalidTokenException;
 import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 import org.springframework.security.oauth2.common.exceptions.RedirectMismatchException;
-import org.springframework.security.oauth2.common.exceptions.SerializationException;
 import org.springframework.security.oauth2.common.exceptions.UnauthorizedClientException;
 import org.springframework.security.oauth2.common.exceptions.UnsupportedGrantTypeException;
 import org.springframework.security.oauth2.common.exceptions.UnsupportedResponseTypeException;
 import org.springframework.security.oauth2.common.exceptions.UserDeniedAuthorizationException;
-import org.springframework.security.oauth2.common.json.JSONException;
-import org.springframework.security.oauth2.common.json.JSONObject;
-import org.springframework.security.oauth2.common.json.JSONTokener;
 
 /**
  * Default implementation of the OAuth 2 serialization service.
  * 
  * @author Ryan Heaton
+ * @author Dave Syer
  */
 public class DefaultOAuth2SerializationService implements OAuth2SerializationService {
 
-	public String serialize(OAuth2AccessToken accessToken) {
-		try {
-			JSONObject jsonObject = new JSONObject();
-			jsonObject.put("access_token", accessToken.getValue());
-			jsonObject.put("token_type", accessToken.getTokenType());
-
-			Date expiration = accessToken.getExpiration();
-			if (expiration != null) {
-				jsonObject.put("expires_in", (expiration.getTime() - System.currentTimeMillis()) / 1000);
-			}
-
-			OAuth2RefreshToken refreshToken = accessToken.getRefreshToken();
-			if (refreshToken != null) {
-				jsonObject.put("refresh_token", refreshToken.getValue());
-			}
-
-			Set<String> scope = accessToken.getScope();
-			if (scope != null && !scope.isEmpty()) {
-				StringBuilder join = new StringBuilder();
-				for (String sc : scope) {
-					join.append(sc).append(' ');
-				}
-				jsonObject.put("scope", join.toString().trim());
-			}
-
-			return jsonObject.toString(2);
-		} catch (JSONException e) {
-			throw new SerializationException(e);
-		}
-	}
-
-	public OAuth2AccessToken deserializeJsonAccessToken(InputStream serialization) {
-		try {
-			Map<String, String> tokenParams = new TreeMap<String, String>();
-			JSONObject object = new JSONObject(new JSONTokener(new InputStreamReader(serialization, "UTF-8")));
-			@SuppressWarnings("unchecked")
-			Iterator<String> keys = object.keys();
-			if (keys != null) {
-				while (keys.hasNext()) {
-					String key = String.valueOf(keys.next());
-					tokenParams.put(key, object.getString(key));
-				}
-			}
-
-			return deserializeAccessToken(tokenParams);
-		} catch (JSONException e) {
-			throw new SerializationException(e);
-		} catch (UnsupportedEncodingException e) {
-			throw new SerializationException(e);
-		}
-	}
 
 	public OAuth2AccessToken deserializeAccessToken(Map<String, String> tokenParams) {
 		OAuth2AccessToken token = new OAuth2AccessToken(tokenParams.get("access_token"));
@@ -92,7 +35,7 @@ public class DefaultOAuth2SerializationService implements OAuth2SerializationSer
 		if (tokenParams.containsKey("expires_in")) {
 			long expiration = 0;
 			try {
-				expiration = Long.parseLong(tokenParams.get("expires_in"));
+				expiration = Long.parseLong(String.valueOf(tokenParams.get("expires_in")));
 			} catch (NumberFormatException e) {
 				// fall through...
 			}
@@ -120,44 +63,6 @@ public class DefaultOAuth2SerializationService implements OAuth2SerializationSer
 
 		return token;
 
-	}
-
-	public String serialize(OAuth2Exception exception) {
-		try {
-			JSONObject jsonObject = new JSONObject();
-			jsonObject.put("error", exception.getOAuth2ErrorCode());
-			jsonObject.put("error_description", exception.getMessage());
-			Map<String, String> additionalInfo = exception.getAdditionalInformation();
-			if (additionalInfo != null) {
-				for (Map.Entry<String, String> entry : additionalInfo.entrySet()) {
-					jsonObject.put(entry.getKey(), entry.getValue());
-				}
-			}
-			return jsonObject.toString(2);
-		} catch (JSONException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	public OAuth2Exception deserializeJsonError(InputStream serialization) {
-		try {
-			Map<String, String> errorResponse = new TreeMap<String, String>();
-			JSONObject object = new JSONObject(new JSONTokener(new InputStreamReader(serialization, "UTF-8")));
-			@SuppressWarnings("unchecked")
-			Iterator<String> keys = object.keys();
-			if (keys != null) {
-				while (keys.hasNext()) {
-					String key = String.valueOf(keys.next());
-					errorResponse.put(key, object.getString(key));
-				}
-			}
-
-			return deserializeError(errorResponse);
-		} catch (JSONException e) {
-			throw new SerializationException(e);
-		} catch (UnsupportedEncodingException e) {
-			throw new SerializationException(e);
-		}
 	}
 
 	public OAuth2Exception deserializeError(Map<String, String> errorParams) {
