@@ -10,7 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package org.springframework.security.oauth2.common.json;
+package org.springframework.security.oauth2.common.exceptions;
 
 import java.io.IOException;
 import java.util.Map.Entry;
@@ -19,7 +19,6 @@ import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.JsonSerializer;
 import org.codehaus.jackson.map.SerializerProvider;
-import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 
 /**
  * @author Dave Syer

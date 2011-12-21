@@ -26,9 +26,9 @@ import org.springframework.security.oauth2.client.resource.OAuth2AccessDeniedExc
 import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
 import org.springframework.security.oauth2.client.token.auth.ClientAuthenticationHandler;
 import org.springframework.security.oauth2.client.token.auth.DefaultClientAuthenticationHandler;
-import org.springframework.security.oauth2.client.util.DefaultOAuth2SerializationService;
-import org.springframework.security.oauth2.client.util.OAuth2SerializationService;
+import org.springframework.security.oauth2.common.DefaultOAuth2SerializationService;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.common.OAuth2SerializationService;
 import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 import org.springframework.util.Assert;
 import org.springframework.util.MultiValueMap;

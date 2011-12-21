@@ -1,8 +1,7 @@
-package org.springframework.security.oauth2.client.util;
+package org.springframework.security.oauth2.common;
 
 import java.util.Map;
 
-import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 
 /**

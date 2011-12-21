@@ -1,4 +1,4 @@
-package org.springframework.security.oauth2.client.util;
+package org.springframework.security.oauth2.common;
 
 import java.util.Date;
 import java.util.Map;
@@ -6,8 +6,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
-import org.springframework.security.oauth2.common.OAuth2AccessToken;
-import org.springframework.security.oauth2.common.OAuth2RefreshToken;
 import org.springframework.security.oauth2.common.exceptions.InvalidClientException;
 import org.springframework.security.oauth2.common.exceptions.InvalidGrantException;
 import org.springframework.security.oauth2.common.exceptions.InvalidRequestException;
