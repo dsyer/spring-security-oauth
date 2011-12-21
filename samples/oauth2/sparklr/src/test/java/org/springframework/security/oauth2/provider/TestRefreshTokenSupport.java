@@ -12,7 +12,6 @@ import org.junit.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.common.DefaultOAuth2SerializationService;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -43,9 +42,8 @@ public class TestRefreshTokenSupport {
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 		assertEquals("no-store", response.getHeaders().getFirst("Cache-Control"));
 
-		DefaultOAuth2SerializationService serializationService = new DefaultOAuth2SerializationService();
 		@SuppressWarnings("unchecked")
-		OAuth2AccessToken accessToken = serializationService.deserializeAccessToken(response.getBody());
+		OAuth2AccessToken accessToken = OAuth2AccessToken.valueOf(response.getBody());
 
 		// now try and use the token to access a protected resource.
 
@@ -67,7 +65,7 @@ public class TestRefreshTokenSupport {
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 		assertEquals("no-store", response.getHeaders().getFirst("Cache-Control"));
 		@SuppressWarnings("unchecked")
-		OAuth2AccessToken newAccessToken = serializationService.deserializeAccessToken(response.getBody());
+		OAuth2AccessToken newAccessToken = OAuth2AccessToken.valueOf(response.getBody());
 		assertFalse(newAccessToken.getValue().equals(accessToken.getValue()));
 
 		// make sure the new access token can be used.

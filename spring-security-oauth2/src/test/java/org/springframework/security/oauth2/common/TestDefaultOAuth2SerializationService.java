@@ -32,13 +32,11 @@ import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
  */
 public class TestDefaultOAuth2SerializationService {
 
-	private DefaultOAuth2SerializationService service = new DefaultOAuth2SerializationService();
-
 	@Test
 	public void testDefaultDeserialization() throws Exception {
 		Map<String, String> accessToken = MapBuilder.create("access_token", "FOO").add("expires_in", "100")
 				.add("token_type", "mac").build();
-		OAuth2AccessToken result = service.deserializeAccessToken(accessToken);
+		OAuth2AccessToken result = OAuth2AccessToken.valueOf(accessToken);
 		// System.err.println(result);
 		assertEquals("FOO", result.getValue());
 		assertEquals("mac", result.getTokenType());
@@ -49,7 +47,7 @@ public class TestDefaultOAuth2SerializationService {
 	public void testExceptionDeserialization() throws Exception {
 		Map<String, String> exception = MapBuilder.create("error", "invalid_client").add("error_description", "FOO")
 				.build();
-		OAuth2Exception result = service.deserializeError(exception);
+		OAuth2Exception result = OAuth2Exception.valueOf(exception);
 		// System.err.println(result);
 		assertEquals("FOO", result.getMessage());
 		assertEquals("invalid_client", result.getOAuth2ErrorCode());

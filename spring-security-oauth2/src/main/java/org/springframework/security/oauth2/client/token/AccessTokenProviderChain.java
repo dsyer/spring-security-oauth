@@ -14,6 +14,7 @@ import org.springframework.security.oauth2.client.resource.OAuth2AccessDeniedExc
 import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2RefreshToken;
+import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 
 /**
  * A chain of OAuth2 access token providers. This implementation will iterate through its chain to find the first
@@ -101,7 +102,7 @@ public class AccessTokenProviderChain extends OAuth2AccessTokenSupport implement
 
 		if (request.isError()) {
 			// there was an oauth error...
-			throw getSerializationService().deserializeError(request.toSingleValueMap());
+			throw OAuth2Exception.valueOf(request.toSingleValueMap());
 		} 
 		
 		for (AccessTokenProvider tokenProvider : chain) {

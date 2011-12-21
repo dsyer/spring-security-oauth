@@ -106,7 +106,7 @@ public class ImplicitAccessTokenProvider extends OAuth2AccessTokenSupport implem
 			for (Object key : properties.keySet()) {
 				map.put(key.toString(), properties.get(key).toString());
 			}
-			return getSerializationService().deserializeAccessToken(map);
+			return OAuth2AccessToken.valueOf(map);
 		}
 	}
 
