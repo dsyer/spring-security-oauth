@@ -2,15 +2,20 @@ package org.springframework.security.oauth2.provider;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Rule;
 import org.junit.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.codec.Base64;
 import org.springframework.security.oauth2.common.DefaultOAuth2SerializationService;
@@ -27,7 +32,7 @@ public class TestNativeApplicationProvider {
 
 	@Rule
 	public ServerRunning serverRunning = ServerRunning.isRunning();
-
+	
 	/**
 	 * tests a happy-day flow of the native application provider.
 	 */
@@ -45,9 +50,7 @@ public class TestNativeApplicationProvider {
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 		assertEquals("no-store", response.getHeaders().getFirst("Cache-Control"));
 
-		DefaultOAuth2SerializationService serializationService = new DefaultOAuth2SerializationService();
-		OAuth2AccessToken accessToken = serializationService.deserializeJsonAccessToken(new ByteArrayInputStream(
-				response.getBody().getBytes()));
+		OAuth2AccessToken accessToken = new ObjectMapper().readValue(response.getBody(), OAuth2AccessToken.class);
 
 		// now try and use the token to access a protected resource.
 
@@ -75,14 +78,14 @@ public class TestNativeApplicationProvider {
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("Authorization",
 				String.format("Basic %s", new String(Base64.encode("my-trusted-client:".getBytes("UTF-8")), "UTF-8")));
+		headers.setAccept(Arrays.asList(MediaType.ALL));
 
-		ResponseEntity<String> response = serverRunning.postForString("/sparklr2/oauth/token", headers, formData);
+		@SuppressWarnings("rawtypes")
+		ResponseEntity<Map> response = serverRunning.postForMap("/sparklr2/oauth/token", headers, formData);
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 		assertEquals("no-store", response.getHeaders().getFirst("Cache-Control"));
 
-		DefaultOAuth2SerializationService serializationService = new DefaultOAuth2SerializationService();
-		OAuth2AccessToken accessToken = serializationService.deserializeJsonAccessToken(new ByteArrayInputStream(
-				response.getBody().getBytes()));
+		String accessToken = (String) response.getBody().get("access_token");
 
 		// now try and use the token to access a protected resource.
 
@@ -91,7 +94,7 @@ public class TestNativeApplicationProvider {
 
 		// now make sure an authorized request is valid.
 		headers = new HttpHeaders();
-		headers.set("Authorization", String.format("%s %s", OAuth2AccessToken.BEARER_TYPE, accessToken.getValue()));
+		headers.set("Authorization", String.format("%s %s", OAuth2AccessToken.BEARER_TYPE, accessToken));
 		assertEquals(HttpStatus.OK, serverRunning.getStatusCode("/sparklr2/photos?format=json", headers));
 	}
 
@@ -138,8 +141,11 @@ public class TestNativeApplicationProvider {
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("Authorization",
 				"Basic " + new String(Base64.encode("my-trusted-client-with-secret:somesecret".getBytes())));
-		ResponseEntity<String> response = serverRunning.postForString("/sparklr2/oauth/token", headers, formData);
+		headers.setAccept(Arrays.asList(MediaType.ALL));
+		@SuppressWarnings("rawtypes")
+		ResponseEntity<Map> response = serverRunning.postForMap("/sparklr2/oauth/token", headers, formData);
 		assertEquals(HttpStatus.OK, response.getStatusCode());
+		assertTrue("Wrong body: "+response.getBody(), response.getBody().containsKey("access_token"));
 	}
 
 	/**

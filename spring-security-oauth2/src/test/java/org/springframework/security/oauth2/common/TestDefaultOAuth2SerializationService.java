@@ -23,6 +23,8 @@ import java.io.ByteArrayInputStream;
 import java.util.Date;
 
 import org.junit.Test;
+import org.springframework.security.oauth2.common.exceptions.InvalidClientException;
+import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 
 
 /**
@@ -45,6 +47,14 @@ public class TestDefaultOAuth2SerializationService {
 	}
 
 	@Test
+	public void testExceptionSerialization() throws Exception {
+		InvalidClientException exception = new InvalidClientException("FOO");
+		String result = service.serialize(exception);
+		assertTrue("Wrong result: "+result, result.contains("\"error\": \"invalid_client\""));
+		assertTrue("Wrong result: "+result, result.contains("\"error_description\": \"FOO\""));
+	}
+
+	@Test
 	public void testDefaultDeserialization() throws Exception {
 		String accessToken = "{\"access_token\": \"FOO\", \"expires_in\": 100, \"token_type\": \"mac\"}";
 		OAuth2AccessToken result = service.deserializeJsonAccessToken(new ByteArrayInputStream(accessToken.getBytes()));
@@ -52,6 +62,16 @@ public class TestDefaultOAuth2SerializationService {
 		assertEquals("FOO", result.getValue());
 		assertEquals("mac", result.getTokenType());
 		assertTrue(result.getExpiration().getTime()>System.currentTimeMillis());
+	}
+
+	@Test
+	public void testExceptionDeserialization() throws Exception {
+		String exception = "{\"error\": \"invalid_client\", \"error_description\": \"FOO\"}";
+		OAuth2Exception result = service.deserializeJsonError(new ByteArrayInputStream(exception.getBytes()));
+		// System.err.println(result);
+		assertEquals("FOO", result.getMessage());
+		assertEquals("invalid_client", result.getOAuth2ErrorCode());
+		assertTrue(result instanceof InvalidClientException);
 	}
 
 }

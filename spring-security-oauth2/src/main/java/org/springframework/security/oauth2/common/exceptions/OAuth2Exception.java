@@ -3,13 +3,19 @@ package org.springframework.security.oauth2.common.exceptions;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.codehaus.jackson.map.annotate.JsonDeserialize;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.oauth2.common.OAuth2ExceptionDeserializer;
+import org.springframework.security.oauth2.common.OAuth2ExceptionSerializer;
 
 /**
  * Base exception for OAuth 2 authentication exceptions.
  * 
  * @author Ryan Heaton
  */
+@JsonSerialize(using=OAuth2ExceptionSerializer.class)
+@JsonDeserialize(using=OAuth2ExceptionDeserializer.class)
 public class OAuth2Exception extends AuthenticationException {
 
   private Map<String, String> additionalInformation = null;
