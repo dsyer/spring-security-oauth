@@ -12,8 +12,6 @@
  */
 package org.springframework.security.oauth2.http.converter.jaxb;
 
-import javax.xml.bind.JAXBException;
-
 import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 
 public final class JaxbOAuth2ExceptionMessageConverter extends

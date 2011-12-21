@@ -30,61 +30,70 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.http.converter.xml.AbstractXmlHttpMessageConverter;
 
-abstract class AbstractJaxbMessageConverter<I,E> extends AbstractXmlHttpMessageConverter<E> {
-		private final Class<I> internalClass;
-		private final Class<E> externalClass;
-		private final Unmarshaller unmarshaller;
-		private final Marshaller marshaller;
+/**
+ * @author Rob Winch
+ *
+ * @param <I>
+ * @param <E>
+ */
+abstract class AbstractJaxbMessageConverter<I, E> extends AbstractXmlHttpMessageConverter<E> {
 
-		public AbstractJaxbMessageConverter(Class<I> internalClass, Class<E> externalClass) {
-			this.internalClass = internalClass;
-			this.externalClass = externalClass;
-			try {
-				JAXBContext context = JAXBContext.newInstance(this.internalClass);
-				this.unmarshaller = context.createUnmarshaller();
-				this.marshaller = context.createMarshaller();
-				this.marshaller.setProperty("jaxb.fragment", Boolean.TRUE);
-			}catch(JAXBException e) {
-				throw new RuntimeException(e);
-			}
+	private final Class<I> internalClass;
+
+	private final Class<E> externalClass;
+
+	private final Unmarshaller unmarshaller;
+
+	private final Marshaller marshaller;
+
+	public AbstractJaxbMessageConverter(Class<I> internalClass, Class<E> externalClass) {
+		this.internalClass = internalClass;
+		this.externalClass = externalClass;
+		try {
+			JAXBContext context = JAXBContext.newInstance(this.internalClass);
+			this.unmarshaller = context.createUnmarshaller();
+			this.marshaller = context.createMarshaller();
+			this.marshaller.setProperty("jaxb.fragment", Boolean.TRUE);
 		}
-
-		@Override
-		protected final E readFromSource(Class<? extends E> clazz, HttpHeaders headers,
-				Source source) throws IOException {
-			try {
-				JAXBElement<? extends I> jaxbElement = unmarshaller.unmarshal(source, internalClass);
-				return convertToExternal(jaxbElement.getValue());
-			}
-			catch (UnmarshalException ex) {
-				throw new HttpMessageNotReadableException("Could not unmarshal to [" + clazz + "]: " + ex.getMessage(), ex);
-			}
-			catch (JAXBException ex) {
-				throw new HttpMessageConversionException("Could not instantiate JAXBContext: " + ex.getMessage(), ex);
-			}
+		catch (JAXBException e) {
+			throw new RuntimeException(e);
 		}
-
-		@Override
-		protected final void writeToResult(E accessToken, HttpHeaders headers, Result result) throws IOException {
-			I convertedAccessToken = convertToInternal(accessToken);
-			try {
-				marshaller.marshal(convertedAccessToken, result);
-			}
-			catch (MarshalException ex) {
-				throw new HttpMessageNotWritableException("Could not marshal [" + accessToken + "]: " + ex.getMessage(), ex);
-			}
-			catch (JAXBException ex) {
-				throw new HttpMessageConversionException("Could not instantiate JAXBContext: " + ex.getMessage(), ex);
-			}
-		}
-
-		@Override
-		protected final boolean supports(Class<?> clazz) {
-			return this.externalClass.isAssignableFrom(clazz);
-		}
-
-		protected abstract E convertToExternal(I internalValue);
-
-		protected abstract I convertToInternal(E externalValue);
 	}
 
+	@Override
+	protected final E readFromSource(Class<? extends E> clazz, HttpHeaders headers, Source source) throws IOException {
+		try {
+			JAXBElement<? extends I> jaxbElement = unmarshaller.unmarshal(source, internalClass);
+			return convertToExternal(jaxbElement.getValue());
+		}
+		catch (UnmarshalException ex) {
+			throw new HttpMessageNotReadableException("Could not unmarshal to [" + clazz + "]: " + ex.getMessage(), ex);
+		}
+		catch (JAXBException ex) {
+			throw new HttpMessageConversionException("Could not instantiate JAXBContext: " + ex.getMessage(), ex);
+		}
+	}
+
+	@Override
+	protected final void writeToResult(E accessToken, HttpHeaders headers, Result result) throws IOException {
+		I convertedAccessToken = convertToInternal(accessToken);
+		try {
+			marshaller.marshal(convertedAccessToken, result);
+		}
+		catch (MarshalException ex) {
+			throw new HttpMessageNotWritableException("Could not marshal [" + accessToken + "]: " + ex.getMessage(), ex);
+		}
+		catch (JAXBException ex) {
+			throw new HttpMessageConversionException("Could not instantiate JAXBContext: " + ex.getMessage(), ex);
+		}
+	}
+
+	@Override
+	protected final boolean supports(Class<?> clazz) {
+		return this.externalClass.isAssignableFrom(clazz);
+	}
+
+	protected abstract E convertToExternal(I internalValue);
+
+	protected abstract I convertToInternal(E externalValue);
+}
