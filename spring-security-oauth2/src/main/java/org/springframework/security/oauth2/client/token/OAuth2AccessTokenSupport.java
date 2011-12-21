@@ -36,6 +36,7 @@ import org.springframework.web.client.HttpMessageConverterExtractor;
 import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -73,7 +74,7 @@ public abstract class OAuth2AccessTokenSupport implements InitializingBean {
 		Assert.notNull(serializationService, "OAuth2 serialization service is required.");
 	}
 
-	protected RestTemplate getRestTemplate() {
+	protected RestOperations getRestTemplate() {
 		return restTemplate;
 	}
 
@@ -83,10 +84,6 @@ public abstract class OAuth2AccessTokenSupport implements InitializingBean {
 
 	public void setSerializationService(OAuth2SerializationService serializationService) {
 		this.serializationService = serializationService;
-	}
-
-	protected ClientAuthenticationHandler getAuthenticationHandler() {
-		return authenticationHandler;
 	}
 
 	public void setAuthenticationHandler(ClientAuthenticationHandler authenticationHandler) {
@@ -99,7 +96,7 @@ public abstract class OAuth2AccessTokenSupport implements InitializingBean {
 		try {
 			// Prepare headers and form before going into rest template call in case the URI is affected by the result
 			HttpHeaders headers = new HttpHeaders();
-			getAuthenticationHandler().authenticateTokenRequest(resource, form, headers);
+			authenticationHandler.authenticateTokenRequest(resource, form, headers);
 
 			return getRestTemplate().execute(getAccessTokenUri(resource, form), getHttpMethod(),
 					getRequestCallback(resource, form, headers), getResponseExtractor(), form.toSingleValueMap());

@@ -39,12 +39,8 @@ public class OAuth2ErrorHandler extends DefaultResponseErrorHandler {
 			Map<String, String> headerEntries = StringSplitUtils.splitEachArrayElementAndCreateMap(
 					StringSplitUtils.splitIgnoringQuotes(authenticateHeader.substring(headerType.length()),
 							','), "=", "\"");
-			throw getSerializationService().deserializeError(headerEntries);
+			throw serializationService.deserializeError(headerEntries);
 		}		
-	}
-
-	public OAuth2SerializationService getSerializationService() {
-		return serializationService;
 	}
 
 	public void setSerializationService(OAuth2SerializationService serializationService) {
