@@ -98,6 +98,12 @@ public class AccessTokenProviderChain extends OAuth2AccessTokenSupport implement
 
 	protected OAuth2AccessToken obtainNewAccessTokenInternal(OAuth2ProtectedResourceDetails details,
 			AccessTokenRequest request) throws UserRedirectRequiredException, AccessDeniedException {
+
+		if (request.isError()) {
+			// there was an oauth error...
+			throw getSerializationService().deserializeError(request.toSingleValueMap());
+		} 
+		
 		for (AccessTokenProvider tokenProvider : chain) {
 			if (tokenProvider.supportsResource(details)) {
 				return tokenProvider.obtainAccessToken(details, request);

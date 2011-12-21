@@ -55,10 +55,6 @@ public abstract class OAuth2AccessTokenSupport implements InitializingBean {
 
 	private List<HttpMessageConverter<?>> messageConverters = new ArrayList<HttpMessageConverter<?>>();
 
-	private final OAuth2AccessTokenMessageConverter formAccessTokenMessageConverter = new OAuth2AccessTokenMessageConverter();
-
-	private final OAuth2ErrorMessageConverter formErrorMessageConverter = new OAuth2ErrorMessageConverter();
-
 	private OAuth2SerializationService serializationService = new DefaultOAuth2SerializationService();
 
 	private ClientAuthenticationHandler authenticationHandler = new DefaultClientAuthenticationHandler();
@@ -99,8 +95,8 @@ public abstract class OAuth2AccessTokenSupport implements InitializingBean {
 
 	public void setMessageConverters(List<HttpMessageConverter<?>> messageConverters) {
 		this.messageConverters = new ArrayList<HttpMessageConverter<?>>(messageConverters);
-		this.messageConverters.add(this.formAccessTokenMessageConverter);
-		this.messageConverters.add(this.formErrorMessageConverter);
+		this.messageConverters.add(new OAuth2AccessTokenMessageConverter());
+		this.messageConverters.add(new OAuth2ErrorMessageConverter());
 	}
 
 	protected OAuth2AccessToken retrieveToken(MultiValueMap<String, String> form,

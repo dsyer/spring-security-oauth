@@ -39,11 +39,11 @@ public class ImplicitAccessTokenProvider extends OAuth2AccessTokenSupport implem
 	public boolean supportsResource(OAuth2ProtectedResourceDetails resource) {
 		return resource instanceof ImplicitResourceDetails && "implicit".equals(resource.getGrantType());
 	}
-	
+
 	public boolean supportsRefresh(OAuth2ProtectedResourceDetails resource) {
 		return false;
 	}
-	
+
 	public OAuth2AccessToken refreshAccessToken(OAuth2ProtectedResourceDetails resource,
 			OAuth2RefreshToken refreshToken, AccessTokenRequest request) throws UserRedirectRequiredException {
 		return null;
@@ -53,17 +53,10 @@ public class ImplicitAccessTokenProvider extends OAuth2AccessTokenSupport implem
 			throws UserRedirectRequiredException, AccessDeniedException {
 
 		ImplicitResourceDetails resource = (ImplicitResourceDetails) details;
-
-		if (request.isError()) {
-			// there was an oauth error...
-			throw getSerializationService().deserializeError(request.toSingleValueMap());
-		}
-		else {
-			return retrieveToken(getParametersForTokenRequest(resource, request), resource);
-		}
+		return retrieveToken(getParametersForTokenRequest(resource, request), resource);
 
 	}
-	
+
 	@Override
 	protected ResponseExtractor<OAuth2AccessToken> getResponseExtractor() {
 		return new ImplicitResponseExtractor();
