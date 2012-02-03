@@ -44,7 +44,7 @@ Following Google, one idea (outside the spec) for adding explicit meaning to sco
 > Sequence diagram, scopes and optional message discovery:
 
     {{ sequence }}
-    {% include scopes-flow.txt %}
+    {% include scopes-discovery-flow.txt %}
     {{ endsequence }}
 
 ## Resource IDs
