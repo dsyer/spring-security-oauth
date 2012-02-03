@@ -14,8 +14,50 @@ h1 a { text-decoration: none }
 h2 { font-size: 1.5em; color: #040b08; }
 h3 { text-align: center; color: #040b08; }
 a { color: #040b08; }
-.description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
-.download { float: right; }
 pre { background: #000; color: #fff; padding: 15px;}
 hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+  
+#primary-navigation
+{
+  	padding: 0;
+    height:23px;
+    position:relative;
+    margin: 8px 0 0 0;
+}
+  
+#primary-left
+{
+    font-size: 93%;
+    line-height: normal;
+    padding: 0 0 0 8px;
+    height:23px;
+}
+  
+#primary-left ul
+{
+    padding: 0 0 0 5px;
+    margin: 0;
+    list-style: none;
+}
+  
+#primary-left li
+{
+    display:inline;
+}
+
+
+#primary-left a
+{
+    font-weight: normal;
+    display: block;
+    float: left;
+    padding: 5px 14px 5px 14px;
+    margin: 0px 1px 0 0;
+}
+
+#primary-left a:hover
+{
+    background-image:none;
+}
+
 .footer { text-align:center; padding-top:30px; font-style: italic; }
