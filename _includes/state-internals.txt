@@ -1,0 +1,7 @@
+Filter -> StatePersistence: load
+activate Filter
+activate StatePersistence
+StatePersistence -> Filter: null
+deactivate StatePersistence
+deactivate Filter
+

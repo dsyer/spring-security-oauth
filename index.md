@@ -8,3 +8,4 @@ layout: default
 * [Cross Site Request Forgery](csrf.html)
 * [Client Impersonation](impersonate.html)
 * [State Flow](state.html)
+* [Scope Stuff](scope.html)

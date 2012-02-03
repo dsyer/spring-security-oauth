@@ -20,3 +20,8 @@ what role the Authorization Server has in CSRF protection.
     {% include state-flow-sunny-day.txt %}
     {{ endsequence }}
 
+> Sequence diagram, state-internals
+
+    {{ sequence }}
+    {% include state-internals.txt %}
+    {{ endsequence }}
