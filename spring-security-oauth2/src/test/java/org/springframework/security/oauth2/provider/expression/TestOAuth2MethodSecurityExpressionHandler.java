@@ -25,8 +25,10 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.junit.Test;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.oauth2.provider.AuthorizationRequest;
 import org.springframework.security.oauth2.provider.BaseClientDetails;
 import org.springframework.security.oauth2.provider.DefaultAuthorizationRequest;
@@ -41,6 +43,40 @@ import org.springframework.util.ReflectionUtils;
 public class TestOAuth2MethodSecurityExpressionHandler {
 
 	private OAuth2MethodSecurityExpressionHandler handler = new OAuth2MethodSecurityExpressionHandler();
+
+	@Test
+	public void testScopesWithOr() throws Exception {
+		DefaultAuthorizationRequest clientAuthentication = new DefaultAuthorizationRequest("foo",
+				Collections.singleton("read"));
+		clientAuthentication.addClientDetails(new BaseClientDetails("foo", "bar", "", "client_credentials",
+				"ROLE_CLIENT"));
+		clientAuthentication.setApproved(true);
+		Authentication userAuthentication = new UsernamePasswordAuthenticationToken("user", "pass",
+				AuthorityUtils.createAuthorityList("ROLE_USER"));
+		OAuth2Authentication oAuth2Authentication = new OAuth2Authentication(clientAuthentication, userAuthentication);
+		MethodInvocation invocation = new SimpleMethodInvocation(this, ReflectionUtils.findMethod(getClass(),
+				"testOauthClient"));
+		EvaluationContext context = handler.createEvaluationContext(oAuth2Authentication, invocation);
+		Expression expression = handler.getExpressionParser().parseExpression(
+				"#oauth2.hasAnyScope('write') or #oauth2.isUser()");
+		assertTrue((Boolean) expression.getValue(context));
+	}
+
+	@Test(expected = AccessDeniedException.class)
+	public void testScopesInsufficient() throws Exception {
+		DefaultAuthorizationRequest clientAuthentication = new DefaultAuthorizationRequest("foo",
+				Collections.singleton("read"));
+		clientAuthentication.addClientDetails(new BaseClientDetails("foo", "bar", "", "client_credentials",
+				"ROLE_CLIENT"));
+		Authentication userAuthentication = new UsernamePasswordAuthenticationToken("user", "pass",
+				AuthorityUtils.createAuthorityList("ROLE_USER"));
+		OAuth2Authentication oAuth2Authentication = new OAuth2Authentication(clientAuthentication, userAuthentication);
+		MethodInvocation invocation = new SimpleMethodInvocation(this, ReflectionUtils.findMethod(getClass(),
+				"testOauthClient"));
+		EvaluationContext context = handler.createEvaluationContext(oAuth2Authentication, invocation);
+		Expression expression = handler.getExpressionParser().parseExpression("#oauth2.hasAnyScope('write')");
+		expression.getValue(context);
+	}
 
 	@Test
 	public void testOauthClient() throws Exception {
